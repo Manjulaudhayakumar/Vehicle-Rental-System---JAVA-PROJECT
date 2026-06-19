@@ -1,71 +1,8 @@
-package vehicle;
-
+package Vehicle;
 import java.util.Scanner;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 
-class VehicleRent {
-	String ID;
-	String type;
-	String brand;
-	double rentPerDay;
-	boolean isAvailable;
-
-   VehicleRent(){}
-   VehicleRent(String ID,String type,String brand,double  rentPerDay) {
-	this.ID = ID;
-	this.type=type;
-	this.brand = brand;
-	this.rentPerDay = rentPerDay;
-	this.isAvailable = true;
-}
-
- void displayDetails() {
-	 System.out.println(ID+"|"+type+"|"+brand+"|"+rentPerDay+"|"+(isAvailable?"Available":"Rented"));
- }
-	
-}
-
-class Car extends VehicleRent{
-	Car(String ID,String brand,double rentPerDay){
-		this.ID = ID;
-		this.type = "Car";
-		this.brand = brand;
-		this.rentPerDay = rentPerDay;
-		this.isAvailable = true;
-	}
-}
-class Bike extends VehicleRent{
-	Bike(String ID,String brand,double rentPerDay){
-		this.ID = ID;
-		this.type = "Bike";
-		this.brand = brand;
-		this.rentPerDay = rentPerDay;
-		this.isAvailable = true;
-		}
-}
-class Scooty extends VehicleRent{
-	Scooty(String ID,String brand,double rentPerDay){
-		this.ID = ID;
-		this.type = "Scooty";
-		this.brand = brand;
-		this.rentPerDay = rentPerDay;
-		this.isAvailable = true;
-			}
-}
-class Customer{
-	String name ;
-	long Phone;
-	long aadhar;
-	Customer(String name ,long phone,long aadhar){
-		  this.name = name;
-		  this.Phone = phone;
-		  this.aadhar = aadhar;
-	  }
-	void displayCustomer() {
-	    System.out.println("Customer Name : " + name);
-	    System.out.println("Phone         : " + Phone);
-	    System.out.println("Aadhar Number : " + aadhar);
-	}
-}
 public class Vehicle{
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
@@ -120,6 +57,24 @@ public class Vehicle{
 					    int days = sc.nextInt();
 					    double totalRent = days*vehicles[i].rentPerDay;
 					    vehicles[i].isAvailable = false;
+					    try {
+
+					        Connection con = DBConnection.getConnection();
+
+					        String sql =
+					            "UPDATE vehicles SET is_available=false WHERE vehicle_id=?";
+
+					        PreparedStatement ps =
+					            con.prepareStatement(sql);
+
+					        ps.setString(1, rentID);
+
+					        ps.executeUpdate();
+
+					    } catch(Exception e) {
+
+					        e.printStackTrace();
+					    }
 					System.out.println("---------------------------BILL------------------------------------");
 					System.out.println("Vehicle Successfully Rented");
 					cust.displayCustomer();
@@ -141,25 +96,60 @@ public class Vehicle{
             break;
 			
 		case 3 :
-			System.out.println("Enter vehicleID to return:");
-			String returnID = sc.next();
-			boolean foundToReturn = false;
-			for(int i =0;i<vehicles.length;i++) {
-				if(vehicles[i].ID.equals(returnID)) {
-					foundToReturn = true;
-					if(!vehicles[i].isAvailable) {
-						vehicles[i].isAvailable = true;
-						System.out.println("Vehicle Successfully Returned");
-					}else {
-						System.out.println("This vehicle was not rented");
-					}
-					break;
-				}
-			}
-			if(!foundToReturn) {
-				System.out.println("Invalid Vehicle ID");
-			}
-			break;
+
+		    System.out.println("Enter vehicleID to return:");
+		    String returnID = sc.next();
+
+		    boolean foundToReturn = false;
+
+		    for(int i = 0; i < vehicles.length; i++) {
+
+		        if(vehicles[i].ID.equals(returnID)) {
+
+		            foundToReturn = true;
+
+		            if(!vehicles[i].isAvailable) {
+
+		                vehicles[i].isAvailable = true;
+
+		                try {
+
+		                    Connection con = DBConnection.getConnection();
+
+		                    String sql =
+		                        "UPDATE vehicles SET is_available=true WHERE vehicle_id=?";
+
+		                    PreparedStatement ps =
+		                        con.prepareStatement(sql);
+
+		                    ps.setString(1, returnID);
+
+		                    ps.executeUpdate();
+
+		                } catch(Exception e) {
+
+		                    e.printStackTrace();
+		                }
+
+		                System.out.println("Vehicle Successfully Returned");
+
+		            } else {
+
+		                System.out.println("This vehicle was not rented");
+
+		            }
+
+		            break;
+		        }
+		    }
+
+		    if(!foundToReturn) {
+
+		        System.out.println("Invalid Vehicle ID");
+
+		    }
+
+		    break;
 			
 		case 4:
 			System.out.println("Thank you for using Vehicle Rental System");
@@ -173,5 +163,4 @@ public class Vehicle{
 	while(choice!=4);
 	sc.close();
 }
-	
 }
